@@ -2,30 +2,14 @@ package com.projectmatch.android.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import com.projectmatch.android.ui.components.BottomNavBar
-import com.projectmatch.android.ui.screens.DiscoverScreen
-import com.projectmatch.android.ui.screens.HomeScreen
-import com.projectmatch.android.ui.screens.LoginScreen
-import com.projectmatch.android.ui.screens.MatchesScreen
-import com.projectmatch.android.ui.screens.NewProjectScreen
-import com.projectmatch.android.ui.screens.ProfileScreen
-import com.projectmatch.android.ui.screens.ProjectsScreen
-import com.projectmatch.android.ui.screens.SavedScreen
-import com.projectmatch.android.ui.screens.SignupScreen
-import com.projectmatch.android.viewmodel.AuthViewModel
-import com.projectmatch.android.viewmodel.DiscoverViewModel
-import com.projectmatch.android.viewmodel.ProfileViewModel
-import com.projectmatch.android.viewmodel.ProjectsViewModel
+import com.projectmatch.android.ui.screens.*
+import com.projectmatch.android.viewmodel.*
 
 @Composable
 fun ProjectMatchNavGraph(authViewModel: AuthViewModel) {
@@ -46,38 +30,30 @@ fun ProjectMatchNavGraph(authViewModel: AuthViewModel) {
                 onSignup = { rootNav.navigate("signup") },
             )
         }
+
         composable("login") {
-            LoginScreen(
-                authViewModel = authViewModel,
-                onSuccess = {
-                    rootNav.navigate("main") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                },
-                onSignup = { rootNav.navigate("signup") },
-            )
+            LoginScreen(authViewModel) {
+                rootNav.navigate("main") {
+                    popUpTo("home") { inclusive = true }
+                }
+            }
         }
+
         composable("signup") {
-            SignupScreen(
-                authViewModel = authViewModel,
-                onSuccess = {
-                    rootNav.navigate("main") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                },
-                onLogin = { rootNav.navigate("login") },
-            )
+            SignupScreen(authViewModel) {
+                rootNav.navigate("main") {
+                    popUpTo("home") { inclusive = true }
+                }
+            }
         }
+
         composable("main") {
-            MainScaffold(
-                authViewModel = authViewModel,
-                onSignOut = {
-                    authViewModel.signOut()
-                    rootNav.navigate("home") {
-                        popUpTo("main") { inclusive = true }
-                    }
-                },
-            )
+            MainScaffold(authViewModel) {
+                authViewModel.signOut()
+                rootNav.navigate("home") {
+                    popUpTo("main") { inclusive = true }
+                }
+            }
         }
     }
 }
@@ -88,10 +64,7 @@ private fun MainScaffold(
     onSignOut: () -> Unit,
 ) {
     val navController = rememberNavController()
-    val backStack by navController.currentBackStackEntryAsState()
-    val currentRoute = backStack?.destination?.route ?: "discover"
-
-    val bottomRoutes = setOf("discover", "projects", "matches", "saved", "profile")
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: "discover"
 
     val discoverVm: DiscoverViewModel = viewModel()
     val projectsVm: ProjectsViewModel = viewModel()
@@ -99,21 +72,18 @@ private fun MainScaffold(
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in bottomRoutes) {
-                BottomNavBar(currentRoute = currentRoute) { route ->
-                    navController.navigate(route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+            BottomNavBar(currentRoute) { route ->
+                navController.navigate(route) {
+                    popUpTo(navController.graph.findStartDestination().id)
+                    launchSingleTop = true
                 }
             }
         },
-    ) { innerPadding ->
+    ) { padding ->
         NavHost(
             navController = navController,
             startDestination = "discover",
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.padding(padding),
         ) {
             composable("discover") {
                 DiscoverScreen(
@@ -121,30 +91,25 @@ private fun MainScaffold(
                     onPostProject = { navController.navigate("new_project") },
                 )
             }
+
             composable("projects") {
-                ProjectsScreen(
-                    viewModel = projectsVm,
-                    onNewProject = { navController.navigate("new_project") },
-                )
+                ProjectsScreen(projectsVm) {
+                    navController.navigate("new_project")
+                }
             }
+
             composable("new_project") {
                 NewProjectScreen(
                     onBack = { navController.popBackStack() },
                     onCreated = { navController.popBackStack() },
                 )
             }
-            composable("matches") {
-                MatchesScreen()
-            }
-            composable("saved") {
-                SavedScreen()
-            }
+
+            composable("matches") { MatchesScreen() }
+            composable("saved") { SavedScreen() }
+
             composable("profile") {
-                ProfileScreen(
-                    viewModel = profileVm,
-                    authViewModel = authViewModel,
-                    onSignOut = onSignOut,
-                )
+                ProfileScreen(profileVm, authViewModel, onSignOut)
             }
         }
     }
