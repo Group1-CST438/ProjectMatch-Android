@@ -7,9 +7,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.projectmatch.android.BuildConfig
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.annotations.SupabaseInternal
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.gotrue.auth
+import io.github.jan.supabase.gotrue.parseFragmentAndImportSession
 import io.github.jan.supabase.gotrue.providers.Google
 import io.github.jan.supabase.gotrue.user.UserInfo
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,12 +51,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 supabase.auth.signInWith(Google) {
-                    redirectUrl = "projectmatch://auth/callback"
+                    var redirectUrl = "projectmatch://auth/callback"
                 }
             } catch (_: Exception) { /* handled by callback */ }
         }
     }
 
+    @OptIn(SupabaseInternal::class)
     fun handleAuthCallback(intent: Intent) {
         val uri: Uri = intent.data ?: return
         viewModelScope.launch {

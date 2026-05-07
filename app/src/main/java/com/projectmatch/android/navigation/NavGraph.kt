@@ -46,6 +46,7 @@ fun ProjectMatchNavGraph(authViewModel: AuthViewModel) {
                 onSignup = { rootNav.navigate("signup") },
             )
         }
+
         composable("login") {
             LoginScreen(
                 authViewModel = authViewModel,
@@ -57,6 +58,7 @@ fun ProjectMatchNavGraph(authViewModel: AuthViewModel) {
                 onSignup = { rootNav.navigate("signup") },
             )
         }
+
         composable("signup") {
             SignupScreen(
                 authViewModel = authViewModel,
@@ -68,6 +70,7 @@ fun ProjectMatchNavGraph(authViewModel: AuthViewModel) {
                 onLogin = { rootNav.navigate("login") },
             )
         }
+
         composable("main") {
             MainScaffold(
                 authViewModel = authViewModel,
@@ -102,7 +105,9 @@ private fun MainScaffold(
             if (currentRoute in bottomRoutes) {
                 BottomNavBar(currentRoute = currentRoute) { route ->
                     navController.navigate(route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
                         launchSingleTop = true
                         restoreState = true
                     }
@@ -121,24 +126,29 @@ private fun MainScaffold(
                     onPostProject = { navController.navigate("new_project") },
                 )
             }
+
             composable("projects") {
                 ProjectsScreen(
                     viewModel = projectsVm,
                     onNewProject = { navController.navigate("new_project") },
                 )
             }
+
             composable("new_project") {
                 NewProjectScreen(
                     onBack = { navController.popBackStack() },
                     onCreated = { navController.popBackStack() },
                 )
             }
+
             composable("matches") {
                 MatchesScreen()
             }
+
             composable("saved") {
                 SavedScreen()
             }
+
             composable("profile") {
                 ProfileScreen(
                     viewModel = profileVm,

@@ -47,6 +47,7 @@ fun BottomNavBar(
     ) {
         bottomNavItems.forEach { item ->
             val selected = currentRoute == item.route
+
             NavigationBarItem(
                 selected = selected,
                 onClick = { onNavigate(item.route) },
@@ -58,7 +59,10 @@ fun BottomNavBar(
                     )
                 },
                 label = {
-                    Text(text = item.label, fontSize = 10.sp)
+                    Text(
+                        text = item.label,
+                        fontSize = 10.sp,
+                    )
                 },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = ButtonAccent,
