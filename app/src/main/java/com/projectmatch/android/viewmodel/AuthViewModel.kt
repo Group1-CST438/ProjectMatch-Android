@@ -48,9 +48,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun signInWithGoogle() {
         viewModelScope.launch {
             try {
-                supabase.auth.signInWith(Google) {
-                    redirectUrl = "projectmatch://auth/callback"
-                }
+                supabase.auth.signInWith(Google, redirectUrl = "projectmatch://auth/callback")
             } catch (_: Exception) { /* handled by callback */ }
         }
     }
@@ -59,7 +57,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         val uri: Uri = intent.data ?: return
         viewModelScope.launch {
             try {
-                supabase.auth.parseFragmentAndImportSession(uri.toString())
+                supabase.auth.exchangeCodeForSession(uri.toString())
                 _user.value = supabase.auth.currentUserOrNull()
             } catch (_: Exception) { }
         }
